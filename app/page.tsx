@@ -1,18 +1,23 @@
 import Header from '@/components/Header';
 import AIInsightCard from '@/components/AIInsight';
 import StatusCards from '@/components/StatusCards';
+import KpiCards from '@/components/KpiCards';
 import KmongTable from '@/components/KmongTable';
+import OwnTable from '@/components/OwnTable';
 import TrendKeywords from '@/components/TrendKeywords';
 import TodoList from '@/components/TodoList';
+import { fetchKmongProduct, parseKmongEntry } from '@/lib/kmong';
 import type { KmongProduct } from '@/lib/kmong';
+import { fetchGA4Metrics } from '@/lib/ga4';
+import type { GA4Metrics } from '@/lib/ga4';
+import { fetchOwnProducts } from '@/lib/ownProducts';
+import type { OwnProduct } from '@/lib/ownProducts';
 import {
   mockAIInsight,
   mockStatusCards,
   mockTrendKeywords,
   mockTodos,
 } from '@/lib/mockData';
-
-import { fetchKmongProduct, parseKmongEntry } from '@/lib/kmong';
 
 async function getKmongProducts(): Promise<KmongProduct[]> {
   const urlsEnv = process.env.KMONG_URLS || '';
@@ -34,27 +39,39 @@ async function getKmongProducts(): Promise<KmongProduct[]> {
   return results.filter((p): p is KmongProduct => p !== null);
 }
 
+async function getGAMetrics(): Promise<GA4Metrics | null> {
+  try {
+    return await fetchGA4Metrics(7);
+  } catch (err) {
+    console.error('GA4 fetch error:', err);
+    return null;
+  }
+}
+
+async function getOwnProducts(): Promise<OwnProduct[]> {
+  try {
+    return await fetchOwnProducts(7);
+  } catch (err) {
+    console.error('Own products fetch error:', err);
+    return [];
+  }
+}
+
 export default async function Home() {
-  const kmongProducts = await getKmongProducts();
+  const [kmongProducts, gaMetrics, ownProducts] = await Promise.all([
+    getKmongProducts(),
+    getGAMetrics(),
+    getOwnProducts(),
+  ]);
 
   return (
     <main className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-8">
       <Header />
       <AIInsightCard data={mockAIInsight} />
       <StatusCards cards={mockStatusCards} />
-      {/* KPI 자리 — 끝판왕KIM 협의 후 추가 */}
-      <div className="bg-neutral-50 border border-dashed border-neutral-300 rounded-xl p-7 mb-8 text-center">
-        <div className="text-[11px] text-neutral-500 uppercase tracking-widest mb-2 font-medium">
-          KPI 자리
-        </div>
-        <div className="text-[15px] text-neutral-500 font-medium mb-1">
-          끝판왕KIM 협의 후 추가
-        </div>
-        <div className="text-[13px] text-neutral-400">
-          방문자 / 전환율 / 체류시간 등
-        </div>
-      </div>
+      <KpiCards metrics={gaMetrics} />
       <KmongTable products={kmongProducts} />
+      <OwnTable products={ownProducts} />
       <TrendKeywords keywords={mockTrendKeywords} />
       <TodoList todos={mockTodos} />
     </main>
