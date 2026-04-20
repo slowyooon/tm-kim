@@ -80,7 +80,41 @@ export async function fetchKmongProduct(
     const satMatch = bodyText.match(/만족도[^\d]*(\d+)\s*%/);
     const satisfactionRate = satMatch ? parseInt(satMatch[1], 10) : null;
 
+    // 리뷰 수집
+    // 크몽 페이지는 CSS가 본문에 섞여 있어서, "고객들의 리뷰를 요약했어요" 이후부터 찾음
     const recentReviews: KmongReview[] = [];
+
+    // 리뷰 섹션 경계 잡기
+    const reviewStartMatch = bodyText.match(/고객들의\s*리뷰를\s*요약했어요/);
+    const reviewEndMatch = bodyText.match(/(?:책소개|목차|서비스\s*설명|가격\s*정보|전문가\s*정보|취소\s*및\s*환불|상품정보고시)/);
+
+    if (reviewStartMatch && reviewStartMatch.index !== undefined) {
+        const startIdx = reviewStartMatch.index + reviewStartMatch[0].length;
+        const endIdx =
+            reviewEndMatch && reviewEndMatch.index !== undefined && reviewEndMatch.index > startIdx
+                ? reviewEndMatch.index
+                : bodyText.length;
+        const reviewSection = bodyText.slice(startIdx, endIdx);
+
+        // 패턴: 5.0닉네임*****본문 (다음 평점 등장 전까지가 한 리뷰)
+        // 평점은 1.0, 2.3, 5, 5.0 등 다양한 형태 허용
+        const reviewPattern = /(\d(?:\.\d)?)([가-힣a-zA-Z0-9]{1,20}\*{3,})([\s\S]*?)(?=\d(?:\.\d)?[가-힣a-zA-Z0-9]{1,20}\*{3,}|$)/g;
+
+        let match;
+        let count = 0;
+        while ((match = reviewPattern.exec(reviewSection)) !== null && count < 8) {
+            const rating = parseFloat(match[1]);
+            const nickname = match[2].trim();
+            const content = match[3].trim().replace(/\s+/g, ' ').slice(0, 300);
+
+            // 유효성: 평점 0~5, 내용 최소 5자 이상, 내용에 CSS 같은 노이즈 없음
+            const hasNoise = /\{|\}|css-|webkit|display:|content:|transform:/i.test(content);
+            if (rating >= 0 && rating <= 5 && content.length >= 5 && !hasNoise) {
+                recentReviews.push({ rating, nickname, content });
+                count++;
+            }
+        }
+    }
 
     return {
         url,

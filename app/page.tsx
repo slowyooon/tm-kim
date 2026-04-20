@@ -1,23 +1,16 @@
 import Header from '@/components/Header';
-import AIInsightCard from '@/components/AIInsight';
-import StatusCards from '@/components/StatusCards';
 import KpiCards from '@/components/KpiCards';
 import KmongTable from '@/components/KmongTable';
 import OwnTable from '@/components/OwnTable';
 import TrendKeywords from '@/components/TrendKeywords';
-import TodoList from '@/components/TodoList';
 import { fetchKmongProduct, parseKmongEntry } from '@/lib/kmong';
 import type { KmongProduct } from '@/lib/kmong';
 import { fetchGA4Metrics } from '@/lib/ga4';
 import type { GA4Metrics } from '@/lib/ga4';
 import { fetchOwnProducts } from '@/lib/ownProducts';
 import type { OwnProduct } from '@/lib/ownProducts';
-import {
-  mockAIInsight,
-  mockStatusCards,
-  mockTrendKeywords,
-  mockTodos,
-} from '@/lib/mockData';
+import { fetchKeywordTrends } from '@/lib/naver';
+import type { TrendKeyword } from '@/lib/naver';
 
 async function getKmongProducts(): Promise<KmongProduct[]> {
   const urlsEnv = process.env.KMONG_URLS || '';
@@ -57,23 +50,30 @@ async function getOwnProducts(): Promise<OwnProduct[]> {
   }
 }
 
+async function getTrends(): Promise<TrendKeyword[]> {
+  try {
+    return await fetchKeywordTrends();
+  } catch (err) {
+    console.error('Naver trends fetch error:', err);
+    return [];
+  }
+}
+
 export default async function Home() {
-  const [kmongProducts, gaMetrics, ownProducts] = await Promise.all([
+  const [kmongProducts, gaMetrics, ownProducts, trends] = await Promise.all([
     getKmongProducts(),
     getGAMetrics(),
     getOwnProducts(),
+    getTrends(),
   ]);
 
   return (
     <main className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-8">
       <Header />
-      <AIInsightCard data={mockAIInsight} />
-      <StatusCards cards={mockStatusCards} />
       <KpiCards metrics={gaMetrics} />
       <KmongTable products={kmongProducts} />
       <OwnTable products={ownProducts} />
-      <TrendKeywords keywords={mockTrendKeywords} />
-      <TodoList todos={mockTodos} />
+      <TrendKeywords keywords={trends} />
     </main>
   );
 }
