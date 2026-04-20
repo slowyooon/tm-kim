@@ -1,4 +1,4 @@
-import type { TrendKeyword } from '@/lib/types';
+import type { TrendKeyword } from '@/lib/naver';
 
 export default function TrendKeywords({ keywords }: { keywords: TrendKeyword[] }) {
     return (
