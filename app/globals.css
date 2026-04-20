@@ -10,6 +10,17 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* 브랜드 컬러 */
+  --color-brand-black: #0a1628;
+  --color-brand-blue: #2563eb;
+  --color-brand-blue-deep: #1e3a8a;
+  --color-brand-blue-50: #e6f1fb;
+  --color-brand-blue-200: #b5d4f4;
+  --color-brand-blue-400: #85b7eb;
+  --color-state-success: #16a34a;
+  --color-state-warning: #ea580c;
+  --color-state-danger: #dc2626;
 }
 
 @media (prefers-color-scheme: dark) {
