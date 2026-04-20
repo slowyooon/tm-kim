@@ -12,17 +12,26 @@ import {
   mockTodos,
 } from '@/lib/mockData';
 
+import { fetchKmongProduct, parseKmongEntry } from '@/lib/kmong';
+
 async function getKmongProducts(): Promise<KmongProduct[]> {
-  try {
-    const res = await fetch('http://localhost:3000/api/kmong', {
-      next: { revalidate: 21600 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.products || []).filter((p: unknown) => !(p as { error?: string }).error);
-  } catch {
-    return [];
-  }
+  const urlsEnv = process.env.KMONG_URLS || '';
+  const entries = urlsEnv.split(',').map((s) => s.trim()).filter(Boolean);
+
+  if (entries.length === 0) return [];
+
+  const results = await Promise.all(
+    entries.map(async (entry) => {
+      const { url, priceMin, priceMax } = parseKmongEntry(entry);
+      try {
+        return await fetchKmongProduct(url, priceMin, priceMax);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  return results.filter((p): p is KmongProduct => p !== null);
 }
 
 export default async function Home() {
