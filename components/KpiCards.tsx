@@ -12,17 +12,17 @@ function formatDuration(sec: number): string {
 }
 
 export default function KpiCards({ metrics }: { metrics: GA4Metrics | null }) {
-    // 데이터가 없거나 에러 시 플레이스홀더 유지
+    // 데이터가 없거나 에러 시 플레이스홀더
     if (!metrics) {
         return (
-            <div className="bg-neutral-50 border border-dashed border-neutral-300 rounded-xl p-7 mb-8 text-center">
-                <div className="text-[11px] text-neutral-500 uppercase tracking-widest mb-2 font-medium">
+            <div className="bg-[#0A1628] border border-[#1E3A8A] rounded-xl p-7 mb-8 text-center text-[#B5D4F4]">
+                <div className="text-[11px] uppercase tracking-widest mb-2 font-medium text-[#85B7EB]">
                     KPI · GA4
                 </div>
-                <div className="text-[15px] text-neutral-500 font-medium mb-1">
+                <div className="text-[15px] font-medium mb-1">
                     데이터를 불러올 수 없어
                 </div>
-                <div className="text-[13px] text-neutral-400">
+                <div className="text-[13px] opacity-70">
                     GA4 연결을 확인해줘
                 </div>
             </div>
@@ -46,18 +46,25 @@ export default function KpiCards({ metrics }: { metrics: GA4Metrics | null }) {
                     </span>
                 </h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {items.map((item) => (
-                    <div key={item.label} className="bg-neutral-50 rounded-lg p-4">
-                        <div className="text-[13px] text-neutral-500 mb-2">{item.label}</div>
-                        <div className="text-[26px] font-medium leading-tight">
-                            {item.value}
-                            <span className="text-[14px] font-normal text-neutral-500 ml-1">
-                                {item.unit}
-                            </span>
+            <div className="bg-[#0A1628] border border-[#1E3A8A] rounded-xl p-4 sm:p-5">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {items.map((item) => (
+                        <div
+                            key={item.label}
+                            className="bg-[#E6F1FB] rounded-lg p-4"
+                        >
+                            <div className="text-[12px] text-[#1E3A8A] uppercase tracking-wider mb-2 font-medium">
+                                {item.label}
+                            </div>
+                            <div className="text-[26px] font-medium leading-tight text-[#0A1628]">
+                                {item.value}
+                                <span className="text-[14px] font-normal text-[#1E3A8A] ml-1 opacity-70">
+                                    {item.unit}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </section>
     );
